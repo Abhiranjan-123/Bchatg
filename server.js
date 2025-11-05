@@ -250,17 +250,16 @@ function personalityReply(message) {
     return "Haha, still single — my love life is stuck in beta mode 🤖💕";
   return null;
 }
-
-// ---------------- Custom Replies ----------------
 function customReplies(message) {
   const text = message.toLowerCase();
 
   // --- RRSDEC placement special case ---
   if (text.includes("rrsdce") && text.includes("placement")) {
     return (
-      "😄 Aree,bhosidike ,, placement ka hall behaal hai, khud se padho likho IAS WIAS bano! " +
-      "Tumko bhi pata hi hoga — pichle kuch saalon se koi badi company nahi aayi campus me. " +
-      "Toh tum college se ghanta matlab mat rakho 😜. " +
+      "😄 Aree,bhosidike ,, placement ka hall behaal hai khud se pdho likho ias wias bno "+
+      "tumko bhi pta hii hoga "+
+      "Pichle kuch saalon se koi badi company nahi aayi campus me. " +
+      "to tum college se ghanta mtlb mt rkho "+
       "Mera mashwara hai — khud se padhai karo, skills banao aur off-campus opportunities dhoondo. " +
       "RRSDEC walo, thoda sambhal ke! 😅\n\n👉 Please don’t take it seriously — just for fun!"
     );
@@ -268,69 +267,6 @@ function customReplies(message) {
 
   return null;
 }
-
-// ---------------- Funny Name Data ----------------
-const customFunnyReplies = {
-  "aarohi": "Aarohi bht lambbi sii hai... shant, lekin party me masti nhi chhodi jaati! Holi ho ya Hunkaar, dance floor uska hi hota hai. Munger se hai — aur jab se 'Munger Kaata Company' ki CEO bani hai, tab se company band ho gayi 😂. Ek baar usne diet start ki thi aur gym trainer ne khud mithai le aaya — 'Madam bas khush rahiye!' 🧁",
-  "shiksha": "Shiksha ka naam hi knowledge hai, par wo class me attendance lene ke time hi visible hoti hai 👻. Teachers usse kehte hain 'beta tu course nahi, course tujhse seekh raha hai!' 😂 Ek baar exam me calculator le gayi thi aur calculator ne bola ‘Itna mat pressure daal behen!’ 💻",
-  "rupam": "Rupam comedy ki full factory hai! Uske hasne se pura area alert ho jaata hai 🤣. Ek baar usne mic pakda aur crowd bola ‘Ab bas karo, jaw pain ho gaya!’ 😂 Fashion me aisi expert hai ki rainbow ne usse color tips maange 🌈."
-};
-
-const randomFunnyTemplates = [
-  "{name} ka swag itna tez hai ki Google bhi ‘Did you mean Legend?’ bol deta hai 😎",
-  "{name} ka sense of humor aisa hai ki serious log bhi hasne lagte hain aur reason bhool jaate hain 😂",
-  "Jab {name} selfie leti hai to camera bhi bolta hai ‘Thank you for choosing me!’ 📸",
-  "{name} ne ek baar cooking try ki thi — kitchen ne resignation letter de diya 👨‍🍳🔥",
-  "{name} ka timing itna perfect hai ki alarm clock bhi usse permission leta hai ring karne se pehle ⏰",
-  "Ek baar {name} ne dance kiya, aur DJ ne bola — ‘Main band baja ke ghar jaa raha hoon!’ 💃",
-  "People say {name} ke smile me itni energy hai ki bijli bill free mil jaye ⚡",
-  "Jab {name} khush hota/hoti hai, tab WiFi bhi fast ho jaata hai 📶😂",
-  "Ek baar {name} ne group photo me aankh band ki, aur photo viral ho gaya — art bolke! 🎨",
-  "{name} ka multitasking level aisa hai ki gossip karte hue bhi 2 projects complete kar deti hai 💅"
-];
-
-// Generate ~300-word funny reply
-function generateFunnyParagraph(name) {
-  const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
-  const base = customFunnyReplies[name.toLowerCase()] ||
-    randomFunnyTemplates[Math.floor(Math.random() * randomFunnyTemplates.length)].replace(/{name}/g, capitalName);
-
-  const extras = [
-    `${capitalName} ka friend circle kehta hai, ‘Iske bina to group chat dead ho jata hai!’ 💬`,
-    `Wo har party me late aata/aati hai, lekin exit itni dhamakedaar hoti hai ki sab clap karte hain 👏.`,
-    `Ek baar ${capitalName} ne serious rehne ki koshish ki thi... 3 minute baad sab has has ke gir pade 🤣.`,
-    `Office me ${capitalName} ka naam sunte hi sab kehte hain ‘Ab kuch interesting hone wala hai!’ 🏢.`,
-    `Aur jab mood off hota hai na, to ${capitalName} ek reel bana deta hai — aur usse dekhe bina Neeraj Chopra bhi medal fek deta hai 🥇😂.`,
-    `Life ka funda simple hai — kaam chhodo, chai lao, aur ${capitalName} ke jokes suno ☕.`,
-    `${capitalName} ne ek baar Google pe search kiya ‘How to stay serious?’ — aur Google ne bola ‘Sorry, not available in your country!’ 🌍.`,
-    `Kehte hain jab ${capitalName} exam deta hai, to question paper khud answer bata deta hai ‘Bas tu chill kar bhai!’ 😎.`,
-    `In short — ${capitalName} wo banda/bandi hai jiske bina duniya thodi boring lagti hai 🌎💫.`
-  ];
-
-  return base + " " + extras.join(" ");
-}
-
-// ---------------- API Route ----------------
-app.get("/funny", (req, res) => {
-  const message = req.query.message;
-  if (!message) return res.json({ error: "Please provide a message, e.g., /funny?message=who created you" });
-
-  // 1️⃣ Check for personality reply
-  const personal = personalityReply(message);
-  if (personal) return res.json({ type: "personality", reply: personal });
-
-  // 2️⃣ Check for custom (e.g. RRSDCE placement)
-  const custom = customReplies(message);
-  if (custom) return res.json({ type: "custom", reply: custom });
-
-  // 3️⃣ Else treat as funny name request
-  const name = message.split(" ")[0];
-  const funnyReply = generateFunnyParagraph(name);
-  res.json({ type: "funnyName", reply: funnyReply });
-});
-/* -----------------------------
-   6️⃣ Chat endpoint
------------------------------ */
 /* -----------------------------
    6️⃣ Chat endpoint
 ----------------------------- */
@@ -388,6 +324,7 @@ app.use((req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 app.listen(PORT, () =>
   console.log(`✅ Server running at http://localhost:${PORT}`)
 );
+
 
 
 

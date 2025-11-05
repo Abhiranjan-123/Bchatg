@@ -268,7 +268,55 @@ function customReplies(message) {
   return null;
 }
 
+// Some pre-written specific funny replies
+const customReplies = {
+  "aarohi": "Aarohi bht lambbi sii hai... shant, lekin party me masti nhi chhodi jaati! Holi ho ya Hunkaar, dance floor uska hi hota hai. Munger se hai — aur jab se 'Munger Kaata Company' ki CEO bani hai, tab se company band ho gayi 😂. Ek baar usne diet start ki thi aur gym trainer ne khud mithai le aaya — 'Madam bas khush rahiye!' 🧁",
+  "shiksha": "Shiksha ka naam hi knowledge hai, par wo class me attendance lene ke time hi visible hoti hai 👻. Teachers usse kehte hain 'beta tu course nahi, course tujhse seekh raha hai!' 😂 Ek baar exam me calculator le gayi thi aur calculator ne bola ‘Itna mat pressure daal behen!’ 💻",
+  "rupam": "Rupam comedy ki full factory hai! Uske hasne se pura area alert ho jaata hai 🤣. Ek baar usne mic pakda aur crowd bola ‘Ab bas karo, jaw pain ho gaya!’ 😂 Fashion me aisi expert hai ki rainbow ne usse color tips maange 🌈."
+};
 
+// Random funny templates for any name
+const randomFunnyTemplates = [
+  "{name} ka swag itna tez hai ki Google bhi ‘Did you mean Legend?’ bol deta hai 😎",
+  "{name} ka sense of humor aisa hai ki serious log bhi hasne lagte hain aur reason bhool jaate hain 😂",
+  "Jab {name} selfie leti hai to camera bhi bolta hai ‘Thank you for choosing me!’ 📸",
+  "{name} ne ek baar cooking try ki thi — kitchen ne resignation letter de diya 👨‍🍳🔥",
+  "{name} ka timing itna perfect hai ki alarm clock bhi usse permission leta hai ring karne se pehle ⏰",
+  "Ek baar {name} ne dance kiya, aur DJ ne bola — ‘Main band baja ke ghar jaa raha hoon!’ 💃",
+  "People say {name} ke smile me itni energy hai ki bijli bill free mil jaye ⚡",
+  "Jab {name} khush hota/hoti hai, tab WiFi bhi fast ho jaata hai 📶😂",
+  "Ek baar {name} ne group photo me aankh band ki, aur photo viral ho gaya — art bolke! 🎨",
+  "{name} ka multitasking level aisa hai ki gossip karte hue bhi 2 projects complete kar deti hai 💅"
+];
+
+// Function to generate long funny reply (~300 words)
+function generateFunnyParagraph(name) {
+  const capitalName = name.charAt(0).toUpperCase() + name.slice(1);
+  const base = customReplies[name.toLowerCase()] || randomFunnyTemplates[Math.floor(Math.random() * randomFunnyTemplates.length)].replace(/{name}/g, capitalName);
+  
+  const extras = [
+    `${capitalName} ka friend circle kehta hai, ‘Iske bina to group chat dead ho jata hai!’ 💬`,
+    `Wo har party me late aata/aati hai, lekin exit itni dhamakedaar hoti hai ki sab clap karte hain 👏.`,
+    `Ek baar ${capitalName} ne serious rehne ki koshish ki thi... 3 minute baad sab has has ke gir pade 🤣.`,
+    `Office me ${capitalName} ka naam sunte hi sab kehte hain ‘Ab kuch interesting hone wala hai!’ 🏢.`,
+    `Aur jab mood off hota hai na, to ${capitalName} ek reel bana deta hai — aur usse dekhe bina Neeraj Chopra bhi medal fek deta hai 🥇😂.`,
+    `Life ka funda simple hai — kaam chhodo, chai lao, aur ${capitalName} ke jokes suno ☕.`,
+    `${capitalName} ne ek baar Google pe search kiya ‘How to stay serious?’ — aur Google ne bola ‘Sorry, not available in your country!’ 🌍.`,
+    `Kehte hain jab ${capitalName} exam deta hai, to question paper khud answer bata deta hai ‘Bas tu chill kar bhai!’ 😎.`,
+    `In short — ${capitalName} wo banda/bandi hai jiske bina duniya thodi boring lagti hai 🌎💫.`
+  ];
+
+  return base + " " + extras.join(" ");
+}
+
+// API route
+app.get("/funny", (req, res) => {
+  const name = req.query.name;
+  if (!name) return res.json({ error: "Please provide a name, e.g., /funny?name=shiksha" });
+
+  const reply = generateFunnyParagraph(name);
+  res.json({ name, funnyReply: reply });
+});
 /* -----------------------------
    6️⃣ Chat endpoint
 ----------------------------- */
@@ -329,3 +377,4 @@ app.use((req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 app.listen(PORT, () =>
   console.log(`✅ Server running at http://localhost:${PORT}`)
 );
+

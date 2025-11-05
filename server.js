@@ -267,6 +267,11 @@ function customReplies(message) {
 
   return null;
 }
+
+
+/* -----------------------------
+   6️⃣ Chat endpoint
+----------------------------- */
 /* -----------------------------
    6️⃣ Chat endpoint
 ----------------------------- */
@@ -324,7 +329,5 @@ app.use((req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 app.listen(PORT, () =>
   console.log(`✅ Server running at http://localhost:${PORT}`)
 );
-
-
 
 

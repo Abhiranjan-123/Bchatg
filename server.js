@@ -1,4 +1,4 @@
-// backend/se// backend/server.js
+// backend/server.js
 require("dotenv").config();
 const express = require("express");
 const fs = require("fs");
@@ -97,6 +97,7 @@ async function askGroq(prompt) {
       }
     );
 
+    // Check and log full response for debugging
     if (!response.data || !response.data.choices?.length) {
       console.error("⚠️ Groq returned empty response:", response.data);
       return null;
@@ -111,6 +112,7 @@ async function askGroq(prompt) {
     return null;
   }
 }
+
 
 /* -----------------------------
    4️⃣ Web + Code Fallbacks
@@ -136,6 +138,7 @@ async function searchCodeOnline(query) {
     const { data } = await axios.get(url, { headers: { "User-Agent": "Mozilla/5.0" }, timeout: 12000 });
     const $ = cheerio.load(data);
 
+    // get top links
     const links = [];
     $("a").each((i, el) => {
       const href = $(el).attr("href") || "";
@@ -237,47 +240,38 @@ async function webFallback(query) {
 }
 
 /* -----------------------------
-   💬 Smart generic name responder
+   5️⃣ Personality replies
 ----------------------------- */
-let lastAskedPerson = null;
+function personalityReply(message) {
+  const m = message.toLowerCase();
+  if (m.includes("who created you") || m.includes("who made you"))
+    return "My creator is Abhiranjan Singh — smart, funny, and a bit pagal 😜";
+  if (m.includes("girlfriend") || m.includes("boyfriend"))
+    return "Haha, still single — my love life is stuck in beta mode 🤖💕";
+  return null;
+}
+function customReplies(message) {
+  const text = message.toLowerCase();
 
-function detectGenericName(message) {
-  const lower = message.toLowerCase();
-  const match = lower.match(/\b(do you know|tell me about|who is|what about)\s+([a-z]+)\b/i);
-  if (match) {
-    const name = match[2];
-    const gender = name.endsWith("a") || name.endsWith("i") ? "female" : "male";
-    lastAskedPerson = { name, gender };
-    return gender === "female"
-      ? `Is she from RRSDEC Begusarai?`
-      : `Is he from RRSDEC Begusarai?`;
+  // --- RRSDEC placement special case ---
+  if (text.includes("rrsdce") && text.includes("placement")) {
+    return (
+      "😄 Aree,bhosidike ,, placement ka hall behaal hai khud se pdho likho ias wias bno "+
+      "tumko bhi pta hii hoga "+
+      "Pichle kuch saalon se koi badi company nahi aayi campus me. " +
+      "to tum college se ghanta mtlb mt rkho "+
+      "Mera mashwara hai — khud se padhai karo, skills banao aur off-campus opportunities dhoondo. " +
+      "RRSDEC walo, thoda sambhal ke! 😅\n\n👉 Please don’t take it seriously — just for fun!"
+    );
   }
+
   return null;
 }
 
-function respondGenericName(message) {
-  const m = message.toLowerCase();
-  if (!lastAskedPerson) return null;
-  if (!["yes", "yaa", "ha", "haan", "yup"].includes(m)) return null;
 
-  const { name, gender } = lastAskedPerson;
-  lastAskedPerson = null;
-
-  if (gender === "female") {
-    return (
-      `Aree ${name.charAt(0).toUpperCase() + name.slice(1)} is a really sweet and confident girl from RRSDEC! 🌸 ` +
-      `Always active in events and known for her smile that can fix a whole bad day 😄. ` +
-      `Fun fact: College ke canteen wale bhi uska naam leke discount de dete hain — bas naam ka jaadu hi aisa hai! 😂`
-    );
-  } else {
-    return (
-      `${name.charAt(0).toUpperCase() + name.slice(1)} bhai is a proper RRSDEC legend 😎. ` +
-      `Coding me tez, attendance me kam, par style me full marks! 💪 ` +
-      `Fun fact: Teachers bhi kehte hain “iska confidence alag level pe hai” — par result ke time silent mode on kar deta hai 😅`
-    );
-  }
-}
-
+/* -----------------------------
+   6️⃣ Chat endpoint
+----------------------------- */
 /* -----------------------------
    6️⃣ Chat endpoint
 ----------------------------- */
@@ -289,31 +283,25 @@ app.post("/chat", async (req, res) => {
     console.log(`💭 User asked: "${message}"`);
     let reply = null;
 
-    // 🌟 Generic person-name detection
-    const nameCheck = detectGenericName(message);
-    if (nameCheck) return res.json({ reply: nameCheck });
-
-    const followUp = respondGenericName(message);
-    if (followUp) return res.json({ reply: followUp });
-
-    // 1️⃣ Personality
+    // 1️⃣ Personality — (your custom responses first!)
     reply = personalityReply(message);
     if (reply) return res.json({ reply });
 
-    // 2️⃣ Dataset
+    // 2️⃣ Local Dataset — (search your own data.json)
     reply = findBestAnswer(message);
     if (reply) return res.json({ reply });
 
-    // 3️⃣ Groq
+    // 3️⃣ Groq (LLaMA 3.1)
     reply = await askGroq(message);
     if (reply) {
+      // 🧠 If Groq says "I was created by Meta", override it with your personality
       if (reply.toLowerCase().includes("meta") && message.toLowerCase().includes("who created")) {
         reply = "My creator is Abhiranjan Singh — smart, funny, and a bit pagal 😜";
       }
       return res.json({ reply });
     }
 
-    // 4️⃣ Web Search
+    // 4️⃣ Web Search (Google → DuckDuckGo → Wikipedia)
     reply = await webFallback(message);
     if (!reply) reply = "😕 Sorry, I couldn’t find a clear answer.";
 
@@ -337,7 +325,7 @@ const frontendPath = path.join(__dirname, "frontend");
 app.use(express.static(frontendPath));
 app.use((req, res) => res.sendFile(path.join(frontendPath, "index.html")));
 
+
 app.listen(PORT, () =>
   console.log(`✅ Server running at http://localhost:${PORT}`)
 );
-
